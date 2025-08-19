@@ -22,6 +22,7 @@ const signup = async (req, res, next) => {
   console.log("Request Body:", req.body);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log("Validation Errors:", errors.array());
     return next(new HttpError("Invalid inputs passed, please check your data.", 422));
   }
 
@@ -29,29 +30,25 @@ const signup = async (req, res, next) => {
     fullname,
     email,
     password,
-    mobile,     // string now
-    gender,
+    mobile = "",
+    gender = "",
     type,
-    address,
-    city,
-    state,
-    url,        // lowercase
+    address = "",
+    city = "",
+    state = "",
+    url = "",
     donorDetails = {},
     ngoDetails = {},
     volunteerDetails = {},
   } = req.body;
 
-  if (
-    !fullname || !email || !password || !mobile || !gender || !type ||
-    !address || !city || !state || !url
-  ) {
-    return next(new HttpError("All required fields must be provided.", 422));
-  }
+  const datetime = new Date().toISOString();
 
   let existingUser;
   try {
     existingUser = await User.findOne({ email });
   } catch (err) {
+    console.error("DB lookup failed:", err);
     return next(new HttpError("Signing up failed, please try again later.", 500));
   }
 
@@ -63,6 +60,7 @@ const signup = async (req, res, next) => {
   try {
     hashedPassword = await bcrypt.hash(password, 12);
   } catch (err) {
+    console.error("Password hashing failed:", err);
     return next(new HttpError("Could not create user, please try again.", 500));
   }
 
@@ -77,6 +75,7 @@ const signup = async (req, res, next) => {
     city,
     state,
     url,
+    datetime,
     donorDetails: type === "Donor" ? donorDetails : {},
     ngoDetails: type === "NGO" ? ngoDetails : {},
     volunteerDetails: type === "Volunteer" ? volunteerDetails : {},
@@ -84,8 +83,9 @@ const signup = async (req, res, next) => {
 
   try {
     await createdUser.save();
+    console.log("User created:", createdUser);
   } catch (err) {
-    console.error("Signup save error:", err);
+    console.error("User save failed:", err);
     return next(new HttpError("Signing up failed, please try again later.", 500));
   }
 
@@ -97,9 +97,11 @@ const signup = async (req, res, next) => {
       { expiresIn: "1h" }
     );
   } catch (err) {
+    console.error("JWT signing failed:", err);
     return next(new HttpError("Signing up failed, please try again later.", 500));
   }
 
+  // Optional: send welcome email (fails silently)
   try {
     await transporter.sendMail({
       to: createdUser.email,
@@ -122,10 +124,12 @@ const signup = async (req, res, next) => {
 // ✅ Login
 const login = async (req, res, next) => {
   const { email, password } = req.body;
+
   let existingUser;
   try {
-    existingUser = await User.findOne({ email: email });
+    existingUser = await User.findOne({ email });
   } catch (err) {
+    console.error("DB lookup failed:", err);
     return next(new HttpError("Logging in failed, please try again later.", 500));
   }
 
@@ -137,12 +141,7 @@ const login = async (req, res, next) => {
   try {
     isValidPassword = await bcrypt.compare(password, existingUser.password);
   } catch (err) {
-    return next(
-      new HttpError(
-        "Could not log you in, please check your credentials and try again.",
-        500
-      )
-    );
+    return next(new HttpError("Could not log you in, please check your credentials and try again.", 500));
   }
 
   if (!isValidPassword) {
@@ -168,54 +167,64 @@ const login = async (req, res, next) => {
   });
 };
 
-// ✅ Reset Password Request
+// ✅ Password Reset Request
 const resetPassword = (req, res, next) => {
   crypto.randomBytes(32, (err, buffer) => {
     if (err) {
       return next(new HttpError("Token creation failed.", 500));
     }
-    const token1 = buffer.toString("hex");
-    User.findOne({ email: req.body.email }).then((user) => {
-      if (!user) {
-        return next(new HttpError("No user found.", 422));
-      }
-      user.resetToken = token1;
-      user.expireToken = Date.now() + 3600 * 1000;
-      user.save().then(() => {
-        transporter.sendMail({
-          to: user.email,
-          from: "we-dont-waste-food@king.buzz",
-          subject: "Password Reset",
-          html: `
-            <p>You requested for password reset</p>
-            <h4>Click in this <a href="https://we-dont-waste-food.herokuapp.com/reset-password/${token1}">link</a> to reset password</h4>
-          `,
+    const token = buffer.toString("hex");
+    User.findOne({ email: req.body.email })
+      .then((user) => {
+        if (!user) {
+          return next(new HttpError("No user found.", 422));
+        }
+        user.resetToken = token;
+        user.expireToken = Date.now() + 3600 * 1000; // 1 hour
+        return user.save().then(() => {
+          return transporter.sendMail({
+            to: user.email,
+            from: "we-dont-waste-food@king.buzz",
+            subject: "Password Reset",
+            html: `
+              <p>You requested a password reset</p>
+              <h4>Click <a href="https://we-dont-waste-food.herokuapp.com/reset-password/${token}">here</a> to reset your password</h4>
+            `,
+          });
         });
+      })
+      .then(() => {
         res.json({ message: "Check your email" });
+      })
+      .catch((err) => {
+        console.error("Password reset error:", err);
+        return next(new HttpError("Password reset failed.", 500));
       });
-    });
   });
 };
 
 // ✅ Set New Password
 const newPassword = (req, res, next) => {
-  const newPassword = req.body.password;
-  const sentToken = req.body.token;
+  const { password: newPassword, token: sentToken } = req.body;
+
   User.findOne({ resetToken: sentToken, expireToken: { $gt: Date.now() } })
     .then((user) => {
       if (!user) {
         return next(new HttpError("Reset link invalid or expired.", 422));
       }
-      bcrypt.hash(newPassword, 12).then((hashedpassword) => {
-        user.password = hashedpassword;
+      return bcrypt.hash(newPassword, 12).then((hashedPassword) => {
+        user.password = hashedPassword;
         user.resetToken = undefined;
         user.expireToken = undefined;
-        user.save().then(() => {
+        return user.save().then(() => {
           res.json({ message: "Password updated successfully" });
         });
       });
     })
-    .catch(() => {});
+    .catch((err) => {
+      console.error("New password error:", err);
+      return next(new HttpError("Could not reset password, please try again.", 500));
+    });
 };
 
 // ✅ View Profile
@@ -224,61 +233,12 @@ const viewProfile = async (req, res, next) => {
   try {
     user = await User.findById(req.userData.userId);
   } catch (err) {
-    return next(new HttpError("Fetching User failed, please try again later.", 500));
+    console.error("Fetch user failed:", err);
+    return next(new HttpError("Fetching user failed, please try again later.", 500));
   }
 
-  res.json({
-    fullname: user.fullname,
-    email: user.email,
-    mobile: user.mobile,
-    gender: user.gender,
-    type: user.type,
-    address: user.address,
-    city: user.city,
-    state: user.state,
-    url: user.url,           // lowercase url
-    donorDetails: user.donorDetails,
-    ngoDetails: user.ngoDetails,
-    volunteerDetails: user.volunteerDetails,
-  });
-};
-
-// ✅ Edit Profile (Role cannot be changed)
-const editProfile = async (req, res, next) => {
-  let user;
-  const {
-    fullname,
-    email,
-    mobile,
-    gender,
-    address,
-    city,
-    state,
-    url,       // lowercase url
-    donorDetails,
-    ngoDetails,
-    volunteerDetails,
-  } = req.body;
-
-  try {
-    user = await User.findById(req.userData.userId);
-
-    user.fullname = fullname;
-    user.email = email;
-    user.mobile = mobile;
-    user.gender = gender;
-    user.address = address;
-    user.city = city;
-    user.state = state;
-    user.url = url;
-
-    if (user.type === "Donor") user.donorDetails = donorDetails;
-    if (user.type === "NGO") user.ngoDetails = ngoDetails;
-    if (user.type === "Volunteer") user.volunteerDetails = volunteerDetails;
-
-    await user.save();
-  } catch (err) {
-    return next(new HttpError("Edit User Profile failed, please try again later.", 500));
+  if (!user) {
+    return next(new HttpError("User not found.", 404));
   }
 
   res.json({
@@ -297,9 +257,70 @@ const editProfile = async (req, res, next) => {
   });
 };
 
-exports.signup = signup;
-exports.login = login;
-exports.resetPassword = resetPassword;
-exports.newPassword = newPassword;
-exports.viewProfile = viewProfile;
-exports.editProfile = editProfile;
+// ✅ Edit Profile (Role cannot be changed)
+const editProfile = async (req, res, next) => {
+  const {
+    fullname,
+    email,
+    mobile,
+    gender,
+    address,
+    city,
+    state,
+    url,
+    donorDetails,
+    ngoDetails,
+    volunteerDetails,
+  } = req.body;
+
+  let user;
+  try {
+    user = await User.findById(req.userData.userId);
+    if (!user) {
+      return next(new HttpError("User not found.", 404));
+    }
+
+    user.fullname = fullname;
+    user.email = email;
+    user.mobile = mobile;
+    user.gender = gender;
+    user.address = address;
+    user.city = city;
+    user.state = state;
+    user.url = url;
+
+    // Update role-specific details only
+    if (user.type === "Donor") user.donorDetails = donorDetails;
+    if (user.type === "NGO") user.ngoDetails = ngoDetails;
+    if (user.type === "Volunteer") user.volunteerDetails = volunteerDetails;
+
+    await user.save();
+  } catch (err) {
+    console.error("Edit profile failed:", err);
+    return next(new HttpError("Editing profile failed, please try again later.", 500));
+  }
+
+  res.json({
+    fullname: user.fullname,
+    email: user.email,
+    mobile: user.mobile,
+    gender: user.gender,
+    type: user.type, // role not editable
+    address: user.address,
+    city: user.city,
+    state: user.state,
+    url: user.url,
+    donorDetails: user.donorDetails,
+    ngoDetails: user.ngoDetails,
+    volunteerDetails: user.volunteerDetails,
+  });
+};
+
+module.exports = {
+  signup,
+  login,
+  resetPassword,
+  newPassword,
+  viewProfile,
+  editProfile,
+};
