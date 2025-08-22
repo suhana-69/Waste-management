@@ -1,0 +1,68 @@
+.navbar {
+  background: #111;
+  color: white;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+/* Links in navbar */
+.nav-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  color: #ff4444;
+}
+
+
+/* ✅ Fix: separate wrapper for Login & Signup */
+.nav-buttons {
+  display: flex;
+  gap: 15px;   /* space between Login & Signup */
+}
+
+/* Button styles */
+.btn {
+  padding: 6px 14px;
+  background: #ff4444;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #ff2222;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid #ff4444;
+  color: #ff4444;
+}
+
+.btn-outline:hover {
+  background: #ff4444;
+  color: white;
+}
+
+.active {
+  color: inherit;         /* Use default color */
+  font-weight: normal;    /* Normal font weight */
+  border-bottom: none;    /* Remove underline/border */
+}

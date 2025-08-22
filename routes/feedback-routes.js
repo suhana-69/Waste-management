@@ -12,7 +12,5 @@ router.post("/add", feedbackController.addFeedback);
 // Get feedback for a specific food donation
 router.get("/food/:foodId", feedbackController.getFeedbackForFood);
 
-// Get feedback by logged-in user
-router.get("/my", feedbackController.getMyFeedback);
 
 module.exports = router;

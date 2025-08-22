@@ -30,15 +30,6 @@ const approveNGO = async (req, res, next) => {
   }
 };
 
-// ✅ Delete User
-const deleteUser = async (req, res, next) => {
-  try {
-    await User.findByIdAndDelete(req.params.userId);
-    res.json({ message: "User deleted successfully" });
-  } catch (err) {
-    return next(new HttpError("Deleting user failed.", 500));
-  }
-};
 
 // ✅ All donations
 const getAllDonations = async (req, res, next) => {
@@ -71,15 +62,6 @@ const getAllFeedbacks = async (req, res, next) => {
   }
 };
 
-// ✅ Delete feedback
-const deleteFeedback = async (req, res, next) => {
-  try {
-    await Feedback.findByIdAndDelete(req.params.feedbackId);
-    res.json({ message: "Feedback deleted" });
-  } catch (err) {
-    return next(new HttpError("Deleting feedback failed.", 500));
-  }
-};
 
 // ✅ System Stats
 const getStats = async (req, res, next) => {
@@ -102,9 +84,7 @@ const getStats = async (req, res, next) => {
 
 exports.getAllUsers = getAllUsers;
 exports.approveNGO = approveNGO;
-exports.deleteUser = deleteUser;
 exports.getAllDonations = getAllDonations;
 exports.getExpiredFoods = getExpiredFoods;
 exports.getAllFeedbacks = getAllFeedbacks;
-exports.deleteFeedback = deleteFeedback;
 exports.getStats = getStats;

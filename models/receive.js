@@ -5,16 +5,17 @@ const receiveSchema = new Schema({
   // Relationships
   donor: { type: mongoose.Types.ObjectId, ref: 'User', required: true },   // Donor user
   food: { type: mongoose.Types.ObjectId, ref: 'Food', required: true },    // Food donation
-  receiver: { type: mongoose.Types.ObjectId, ref: 'User', required: true }, // NGO
-  volunteer: { type: mongoose.Types.ObjectId, ref: 'User' },                // Assigned Volunteer
+  receiver: { type: mongoose.Types.ObjectId, ref: 'User', required: true }, // NGO user
 
-  // Receiver details
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  mobile: { type: Number, required: true },
-  address: { type: String, required: true },
+  volunteer: { type: mongoose.Types.ObjectId, ref: 'User' }, // Assigned Volunteer (optional)
 
-  // Tracking
+  // Receiver details (optional for simplicity)
+  name: { type: String },
+  email: { type: String },
+  mobile: { type: String },
+  address: { type: String },
+
+  // Status tracking
   status: { 
     type: String, 
     enum: ["Assigned", "Picked", "In Transit", "Delivered", "Rejected"], 
@@ -24,16 +25,15 @@ const receiveSchema = new Schema({
   pickedAt: { type: Date },
   deliveredAt: { type: Date },
 
-  // Expiry
-  exptime: { type: Date, required: true },
+  // Expiry (optional)
+  exptime: { type: Date },
 
-  // Feedback
+  // Feedback (optional)
   feedback: {
-    ngo: { type: String },          // NGO comments
-    volunteer: { type: String },    // Volunteer comments
-    donor: { type: String }         // Donor feedback
+    ngo: { type: String },          
+    volunteer: { type: String },    
+    donor: { type: String }         
   }
-
 }, { timestamps: true });
 
 module.exports = mongoose.model('Receive', receiveSchema);

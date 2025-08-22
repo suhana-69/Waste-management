@@ -40,14 +40,3 @@ exports.getFeedbackForFood = async (req, res, next) => {
   }
 };
 
-// ✅ Get feedback given by the logged-in user
-exports.getMyFeedback = async (req, res, next) => {
-  try {
-    const feedbacks = await Feedback.find({ user: req.userData.userId })
-      .populate("food", "description quantity foodtype expirytime");
-
-    res.json({ feedbacks });
-  } catch (err) {
-    return next(new HttpError("Fetching user feedback failed", 500));
-  }
-};

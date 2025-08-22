@@ -6,16 +6,15 @@ const foodSchema = new Schema({
   ngo: { type: mongoose.Types.ObjectId, ref: 'User' }, // Assigned NGO
   volunteer: { type: mongoose.Types.ObjectId, ref: 'User' }, // Assigned Volunteer
 
-  // Basic details
-  recId: { type: String, required: true }, 
-  funcname: { type: String, required: true }, // Event / Function Name
-  name: { type: String, required: true },     // Contact person
-  mobile: { type: Number, required: true }, 
-  description: { type: String, required: true },
-  quantity: { type: String, required: true },
-  foodtype: { type: String, required: true }, 
-  cookedtime: { type: String, required: true },
-  expirytime: { type: Date, required: true },
+  // Basic details (all required in donor form)
+  funcname: { type: String, required: true },       // Function / Event Name
+  name: { type: String, required: true },           // Contact person name
+  mobile: { type: String, required: true },         // Mobile number (keep as String to avoid leading 0 issues)
+  description: { type: String, required: true },    // Food description
+  quantity: { type: String, required: true },       // Quantity
+  foodtype: { type: String, required: true },       // Veg / Non-Veg / Packed
+  cookedtime: { type: String, required: true },     // Cooked time
+  expirytime: { type: Date, required: true },       // Expiry time
 
   // Status lifecycle
   status: { 
@@ -25,15 +24,15 @@ const foodSchema = new Schema({
   },
   received: { type: Boolean, default: false },
 
-  // Location
+  // Location (all required in donor form)
   address: { type: String, required: true }, 
   city: { type: String, required: true }, 
   state: { type: String, required: true }, 
-  lat: { type: Number, required: true },
-  lng: { type: Number, required: true },
+  lat: { type: Number },
+  lng: { type: Number },
 
-  // Food Images
-  images: [String], // S3 URLs
+  // Food Images (single file → store in array for flexibility)
+  images: [String], 
 
   // Hygiene checklist
   hygieneCheck: {
@@ -44,10 +43,7 @@ const foodSchema = new Schema({
   },
 
   // Metadata
-  datetime: { type: String, required: true },
-  resetToken: { type: String },
-  expireToken: { type: Date }
-
+  datetime: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Food', foodSchema);
