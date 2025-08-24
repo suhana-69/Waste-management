@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom";
 import "./App.css";
 import Navbar from "./components/Navbar";
-
+import Donation from "./components/Donation";
 // Pages
 import Home from "./components/Home";
 import Login from "./components/Login";
@@ -18,7 +18,7 @@ function App() {
         <Route path="/" exact component={Home} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
-
+        <Route path="/donate" component={Donation} />
         {/* Dashboards */}
         <Route path="/donor-dashboard" component={DonorDashboard} />
         <Route path="/ngo-dashboard" component={NgoDashboard} />

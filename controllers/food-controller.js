@@ -123,28 +123,39 @@ const getFood = async (req, res, next) => {
 
 // ✅ Accept Food
 const acceptfood = async (req, res, next) => {
+  console.log("Accept food called by:", req.userData.userId, "foodId:", req.body.foodId);
+
   const { foodId } = req.body;
 
   let food;
   try {
     food = await Food.findById(foodId);
     if (!food) {
+      console.log("❌ Food not found");
       return next(new HttpError("Food not found.", 404));
     }
+    console.log("✅ Food found:", food);
 
     if (food.status !== "Pending") {
+      console.log("❌ Food already accepted or not pending");
       return next(new HttpError("Food is already accepted or not available.", 400));
     }
 
-    food.recId = req.userData.userId;   // NGO who accepts it
-    food.status = "Accepted";           // ✅ enum string
+    food.recId = req.userData.userId;
+    food.status = "Accepted";
+
+    console.log("🔹 Saving food...");
     await food.save();
+    console.log("✅ Food saved successfully");
+
   } catch (err) {
-    return next(new HttpError("Accepting food failed, please try again later.", 500));
+    console.error("❌ Error in acceptfood controller:", err);
+    return next(new HttpError("Accepting food failed: " + err.message, 500));
   }
 
   res.json({ message: "Food accepted successfully.", food: food.toObject({ getters: true }) });
 };
+;
 
 
 

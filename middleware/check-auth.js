@@ -29,7 +29,7 @@ const checkAuth = (req, res, next) => {
     req.userData = {
       userId: decodedToken.userId,
       email: decodedToken.email,
-      type: decodedToken.type,
+      role: decodedToken.role,   // ✅ FIXED
     };
 
     next();

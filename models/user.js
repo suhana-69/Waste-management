@@ -8,7 +8,7 @@ const userSchema = new Schema({
   password: { type: String, required: true },
   mobile: { type: String, required: true },
   gender: { type: String, required: true },
-  type: { type: String, required: true, enum: ["Donor", "NGO", "Volunteer"] },
+  role: { type: String, required: true, enum: ["Donor", "NGO", "Volunteer"] },
   address: { type: String, required: true },
   city: { type: String, required: true },
   state: { type: String, required: true },

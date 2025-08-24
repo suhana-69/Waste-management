@@ -2,18 +2,16 @@ const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const crypto = require("crypto");
 require("dotenv").config();
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
 
+// ✅ Setup Nodemailer with SendGrid
 const sendgridTransport = require("nodemailer-sendgrid-transport");
 const transporter = nodemailer.createTransport(
   sendgridTransport({
-    auth: {
-      api_key: process.env.Mail_API,
-    },
+    auth: { api_key: process.env.Mail_API },
   })
 );
 
@@ -22,8 +20,9 @@ const signup = async (req, res, next) => {
   console.log("Request Body:", req.body);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log("Validation Errors:", errors.array());
-    return next(new HttpError("Invalid inputs passed, please check your data.", 422));
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
   }
 
   const {
@@ -32,7 +31,7 @@ const signup = async (req, res, next) => {
     password,
     mobile = "",
     gender = "",
-    type,
+    role, // ✅ always use role
     address = "",
     city = "",
     state = "",
@@ -70,15 +69,15 @@ const signup = async (req, res, next) => {
     password: hashedPassword,
     mobile,
     gender,
-    type,
+    role, // ✅ consistent role usage
     address,
     city,
     state,
     url,
     datetime,
-    donorDetails: type === "Donor" ? donorDetails : undefined,
-    ngoDetails: type === "NGO" ? ngoDetails : undefined,
-    volunteerDetails: type === "Volunteer" ? volunteerDetails : undefined,
+    donorDetails: role === "Donor" ? donorDetails : undefined,
+    ngoDetails: role === "NGO" ? ngoDetails : undefined,
+    volunteerDetails: role === "Volunteer" ? volunteerDetails : undefined,
   });
 
   try {
@@ -92,7 +91,7 @@ const signup = async (req, res, next) => {
   let token;
   try {
     token = jwt.sign(
-      { userId: createdUser.id, email: createdUser.email, type: createdUser.type },
+      { userId: createdUser.id, email: createdUser.email, role: createdUser.role }, // ✅ role
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -101,7 +100,7 @@ const signup = async (req, res, next) => {
     return next(new HttpError("Signing up failed, please try again later.", 500));
   }
 
-  // Optional: send welcome email (fails silently)
+  // Optional: send welcome email
   try {
     await transporter.sendMail({
       to: createdUser.email,
@@ -116,20 +115,18 @@ const signup = async (req, res, next) => {
   res.status(201).json({
     userId: createdUser.id,
     email: createdUser.email,
-    type: createdUser.type,
+    role: createdUser.role,
     token,
   });
 };
 
 // ✅ Login
-// AuthController.js
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   let existingUser;
   try {
     existingUser = await User.findOne({ email });
-    console.log("User type at login:", existingUser?.type); // ← Add this line
   } catch (err) {
     return res.status(500).json({ error: "Database lookup failed" });
   }
@@ -138,7 +135,6 @@ const login = async (req, res, next) => {
     return res.status(403).json({ error: "Invalid credentials" });
   }
 
-  // Compare hashed password
   const isValidPassword = await bcrypt.compare(password, existingUser.password);
   if (!isValidPassword) {
     return res.status(403).json({ error: "Invalid credentials" });
@@ -147,7 +143,7 @@ const login = async (req, res, next) => {
   let token;
   try {
     token = jwt.sign(
-      { userId: existingUser._id, email: existingUser.email, type: existingUser.type },
+      { userId: existingUser._id, email: existingUser.email, role: existingUser.role }, // ✅ role
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -158,16 +154,10 @@ const login = async (req, res, next) => {
   res.status(200).json({
     userId: existingUser._id,
     email: existingUser.email,
-    type: existingUser.type,
-    token
+    role: existingUser.role, // ✅ role in response
+    token,
   });
 };
-
-
-
-
-
-
 
 // ✅ View Profile
 const viewProfile = async (req, res, next) => {
@@ -188,7 +178,7 @@ const viewProfile = async (req, res, next) => {
     email: user.email,
     mobile: user.mobile,
     gender: user.gender,
-    type: user.type,
+    role: user.role, // ✅ role everywhere
     address: user.address,
     city: user.city,
     state: user.state,
@@ -198,7 +188,6 @@ const viewProfile = async (req, res, next) => {
     volunteerDetails: user.volunteerDetails,
   });
 };
-
 
 module.exports = {
   signup,

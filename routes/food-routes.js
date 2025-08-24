@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const foodController = require("../controllers/food-controller");
+const checkAuth = require("../middleware/check-auth"); // import middleware
 
-router.post("/addfood", foodController.addfood);
-router.get("/foods", foodController.getFood);
-router.post("/acceptfood", foodController.acceptfood);
-router.get("/donor-foods", foodController.viewDonatedFood);
-router.get("/pending-foods", foodController.getPendingFoods);
+router.post("/addfood", checkAuth, foodController.addfood);
+router.get("/foods", checkAuth, foodController.getFood);
+router.post("/acceptfood", checkAuth, foodController.acceptfood); // ✅ add checkAuth
+router.get("/donor-foods", checkAuth, foodController.viewDonatedFood);
+router.get("/pending-foods", checkAuth, foodController.getPendingFoods);
 
 module.exports = router;
