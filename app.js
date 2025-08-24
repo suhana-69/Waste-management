@@ -13,7 +13,7 @@ const foodRoutes = require('./routes/food-routes');
 const volunteerRoutes = require('./routes/volunteer-routes');
 const feedbackRoutes = require('./routes/feedback-routes');
 const receiveRoutes = require('./routes/receive-routes');
-
+const paymentRoute = require("./routes/payment");
 const app = express();
 
 // ---------------------------
@@ -52,7 +52,7 @@ app.use('/api/food', foodRoutes);
 app.use('/api/volunteer', volunteerRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/receive', receiveRoutes);
-
+app.use("/api/payment", paymentRoute);
 // Simple root route
 app.get('/', (req, res) => {
   res.send('API is running...');
