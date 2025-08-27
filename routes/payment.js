@@ -15,6 +15,7 @@ router.post("/checkout", async (req, res) => {
     const options = {
       amount: 5000 * 100, // amount in paise
       currency: "INR",
+      receipt: "receipt#1"
     };
     const order = await instance.orders.create(options);
     res.json(order);

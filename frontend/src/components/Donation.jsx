@@ -15,7 +15,7 @@ const Donation = () => {
     const order = await res.json();
 
     const options = {
-      key: "rzp_test_YourTestKeyHere",
+      key: process.env.REACT_APP_RAZORPAY_KEY_ID || "rzp_test_R9Fl4RhWIxLeKL",
       amount: order.amount,
       currency: order.currency,
       name: "FoodSavior NGO",
@@ -31,6 +31,7 @@ const Donation = () => {
       },
       theme: { color: "#ff3b3f" },
     };
+console.log("Razorpay Key:", process.env.REACT_APP_RAZORPAY_KEY_ID);
 
     const rzp = new window.Razorpay(options);
     rzp.open();

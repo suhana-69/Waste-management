@@ -3,16 +3,14 @@ const router = express.Router();
 const volunteerController = require("../controllers/volunteer-controller");
 const checkAuth = require("../middleware/check-auth");
 
-// ✅ All routes need authentication
 router.use(checkAuth);
 
-// Assign volunteer (NGO/Admin only)
 router.post("/assign", volunteerController.assignVolunteer);
-
-// Volunteer updates status
 router.post("/update-status", volunteerController.updateStatus);
-
-// Volunteer views their tasks
 router.get("/my-tasks", volunteerController.getMyTasks);
+router.get("/delivered", volunteerController.getDeliveredTasks);
+router.get("/available-tasks", volunteerController.getAvailableTasks);
+router.post("/pick-task", volunteerController.pickTask);
+
 
 module.exports = router;

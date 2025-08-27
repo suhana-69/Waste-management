@@ -2,61 +2,59 @@
 const { check } = require("express-validator");
 
 const signupValidation = [
-  check("fullname")
+  check("name") // ✅ changed from fullname → name
     .trim()
     .not()
     .isEmpty()
-    .withMessage("Full name is required."),
-  
+    .withMessage("Name is required."),
+
   check("email")
     .normalizeEmail()
     .isEmail()
     .withMessage("Please enter a valid email."),
-  
+
   check("password")
     .isLength({ min: 3 })
     .withMessage("Password must be at least 3 characters long."),
-  
-  check("type")
+
+  check("role") // ✅ changed from type → role
     .not()
     .isEmpty()
-    .isIn(["Admin", "Donor", "NGO", "Volunteer"])
-    .withMessage("User type must be one of Admin, Donor, NGO, Volunteer."),
-  
+    .isIn(["admin", "donor", "ngo", "volunteer"]) // ✅ match schema enums
+    .withMessage("User role must be one of admin, donor, ngo, volunteer."),
+
   check("mobile")
     .not()
     .isEmpty()
     .withMessage("Mobile number is required.")
     .isMobilePhone()
     .withMessage("Please enter a valid mobile number."),
-  
+
   check("gender")
     .not()
     .isEmpty()
     .withMessage("Gender is required."),
-  
+
   check("address")
     .trim()
     .not()
     .isEmpty()
     .withMessage("Address is required."),
-  
+
   check("city")
     .trim()
     .not()
     .isEmpty()
     .withMessage("City is required."),
-  
+
   check("state")
     .trim()
     .not()
     .isEmpty()
     .withMessage("State is required."),
-  
+
   check("url")
-    .not()
-    .isEmpty()
-    .withMessage("URL is required.")
+    .optional() // ✅ allow optional (schema allows url to be empty)
     .isURL()
     .withMessage("Please enter a valid URL."),
 ];

@@ -18,6 +18,8 @@ function Navbar() {
         <li><a href="/#how">How It Works</a></li>
         <li><a href="/#impact">Impact</a></li>
         <li><a href="/#contact">Contact</a></li>
+        <li><a href="/feedback">Feedback</a></li>
+
       </ul>
 
       <div className="nav-buttons">
