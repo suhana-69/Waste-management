@@ -105,7 +105,6 @@ function Signup() {
               <option value="donor">Donor</option>
               <option value="ngo">NGO</option>
               <option value="volunteer">Volunteer</option>
-              <option value="admin">Admin</option>
             </select>
             <input
               type="text"

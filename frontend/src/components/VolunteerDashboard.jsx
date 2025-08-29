@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import "./VolunteerDashboard.css";
 
 function VolunteerDashboard() {
@@ -9,100 +8,95 @@ function VolunteerDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("assigned"); // available, assigned, delivered
   const [error, setError] = useState(null);
-  const token = localStorage.getItem("token");
 
-  // Fetch all tasks
-  const fetchTasks = async () => {
-    setError(null);
-    try {
-      const [assignedRes, deliveredRes, availableRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/volunteer/my-tasks", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:5000/api/volunteer/delivered", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:5000/api/volunteer/available-tasks", {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { t: new Date().getTime() }, // force fresh fetch
-        }),
-      ]);
+  // ✅ Demo Data only
+  const demoAssigned = [
+    {
+      status: "Assigned",
+      donor: { fullname: "Rahul Sharma" },
+      food: { description: "Vegetarian meal for 50 people" },
+      receiver: { email: "receiver1@gmail.com", mobile: "9876543210" },
+      address: "Park Street, Kolkata",
+      exptime: "2025-08-29T15:30:00",
+    },
+    {
+      status: "Assigned",
+      donor: { fullname: "Priya Mehta" },
+      food: { description: "Biryani packets for 30 people" },
+      receiver: { email: "priyameheta@gmail.com", mobile: "9123456789" },
+      address: "Salt Lake Sector 5, Kolkata",
+      exptime: "2025-08-29T18:00:00",
+    },
+     {
+      status: "Assigned",
+      donor: { fullname: "Arohi Sen" },
+      food: { description: "Veg rice and vegetables for 80 people" },
+      receiver: { email: "arohisen@gmail.com", mobile: "9123456789" },
+      address: "Salt Lake Sector 5, Kolkata",
+      exptime: "2025-08-29T18:00:00",
+    },
 
-      // Assigned tasks = assigned to me, not delivered
-      setAssignedTasks(
-        assignedRes.data.tasks
-          .filter((task) => task.status !== "Delivered")
-          .map((task) => ({ ...task, status: task.status || "Assigned" })) || []
-      );
+  ];
 
-      // Delivered tasks
-      setDeliveredTasks(
-        deliveredRes.data.delivered.map((task) => ({ ...task, status: "Delivered" })) || []
-      );
+  const demoDelivered = [
+    {
+      status: "Delivered",
+      donor: { fullname: "Amit Verma" },
+      food: { description: "Snacks for 20 people" },
+      receiver: { email: "amit3@gmail.com", mobile: "9988776655" },
+      address: "Howrah, Kolkata",
+      exptime: "2025-08-27T14:00:00",
+      deliveredAt: "2025-08-28T00:12:41",
+    },
+    {
+      status: "Delivered",
+      donor: { fullname: "Zoha Chahan" },
+      food: { description: "70 Glass Fresh fruit jucies" },
+      receiver: { email: "zoha3@gmail.com", mobile: "9988776655" },
+      address: "Howrah, Kolkata",
+      exptime: "2025-08-27T14:00:00",
+      deliveredAt: "2025-08-28T00:12:41",
+    },
+  ];
 
-      // Available tasks = status Accepted & volunteer null
-      setAvailableTasks(
-        availableRes.data.tasks
-          .filter((task) => task.status === "Accepted" && !task.volunteer)
-          .map((task) => ({ ...task, status: "Accepted" })) || []
-      );
-    } catch (err) {
-      console.error("Error fetching tasks:", err);
-      setError("Failed to fetch tasks. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const demoAvailable = [
+    {
+      status: "Available",
+      donor: { fullname: "Rahul Sharma" },
+      food: { description: "Roti & Sabzi for 40 people" },
+      receiver: { email: "rahull@gmail.com", mobile: "9000000000" },
+      address: "New Town, Kolkata",
+      exptime: "2025-08-29T20:00:00",
+    },
+    
+     {
+      status: "Available",
+      donor: { fullname: "Ria Sen" },
+      food: { description: "Rice , sweets and paneer" },
+      receiver: { email: "riasen4@gmail.com", mobile: "9000000000" },
+      address: "New Town, Kolkata",
+      exptime: "2025-08-29T20:00:00",
+    },
+    {
+      status: "Available",
+      donor: { fullname: "Rahul Sharma" },
+      food: { description: "Biriyani and chicken curry" },
+      receiver: { email: "rahuls@gmail.com", mobile: "9000000000" },
+      address: "New Town, Kolkata",
+      exptime: "2025-08-29T20:00:00",
+    },
+    
 
+  ];
+
+  // ✅ Just load demo data directly (ignore API for now)
   useEffect(() => {
-    fetchTasks(); // initial fetch
-
-    // Auto-refresh every 30s
-    const interval = setInterval(fetchTasks, 30000);
-    return () => clearInterval(interval);
-  }, [token]);
-
-  // Mark assigned task as delivered
-  const markAsDelivered = async (receiveId) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/volunteer/update-status",
-        { receiveId, status: "Delivered" },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const deliveredTask = { ...response.data.receive, status: "Delivered" };
-
-      setAssignedTasks(assignedTasks.filter((task) => task._id !== receiveId));
-      setDeliveredTasks([deliveredTask, ...deliveredTasks]);
-    } catch (err) {
-      console.error("Error delivering task:", err.response || err);
-      alert("Failed to mark task as delivered. Try again.");
-    }
-  };
-
-  // Pick an available task
-  const pickTask = async (taskId) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/volunteer/pick-task",
-        { taskId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const pickedTask = { ...response.data.task, status: "Assigned" };
-
-      // Remove from available, add to assigned
-      setAvailableTasks(availableTasks.filter((task) => task._id !== taskId));
-      setAssignedTasks([pickedTask, ...assignedTasks]);
-    } catch (err) {
-      console.error("Error picking task:", err.response || err);
-      alert("Failed to pick task. Try again.");
-    }
-  };
-
-  if (loading) return <div className="loading">Loading tasks...</div>;
-  if (error) return <div className="error">{error}</div>;
+    setAssignedTasks(demoAssigned);
+    setDeliveredTasks(demoDelivered);
+    setAvailableTasks(demoAvailable);
+    setError(".");
+    setLoading(false);
+  }, []);
 
   const tasksToShow =
     activeTab === "assigned"
@@ -111,9 +105,12 @@ function VolunteerDashboard() {
       ? deliveredTasks
       : availableTasks;
 
+  if (loading) return <div className="loading">Loading tasks...</div>;
+
   return (
     <div className="dashboard">
       <h1 className="title">Volunteer Dashboard</h1>
+      {error && <p className="error">{error}</p>}
 
       {/* Tabs */}
       <div className="tabs">
@@ -142,8 +139,8 @@ function VolunteerDashboard() {
         <p className="no-tasks">No {activeTab} tasks yet.</p>
       ) : (
         <div className="card-container">
-          {tasksToShow.map((task) => (
-            <div key={task._id} className="card">
+          {tasksToShow.map((task, index) => (
+            <div key={index} className="card">
               <h2>
                 Status:{" "}
                 <span
@@ -158,19 +155,13 @@ function VolunteerDashboard() {
                   {task.status || "N/A"}
                 </span>
               </h2>
-              <p>
-                <strong>Donor:</strong> {task.donor?.fullname || "N/A"}
-              </p>
-              <p>
-                <strong>Food:</strong> {task.food?.description || "N/A"}
-              </p>
+              <p><strong>Donor:</strong> {task.donor?.fullname || "N/A"}</p>
+              <p><strong>Food:</strong> {task.food?.description || "N/A"}</p>
               <p>
                 <strong>Receiver:</strong> {task.receiver?.email || "N/A"} (
                 {task.receiver?.mobile || "N/A"})
               </p>
-              <p>
-                <strong>Address:</strong> {task.address || "N/A"}
-              </p>
+              <p><strong>Address:</strong> {task.address || "N/A"}</p>
               <p>
                 <strong>Expiry:</strong>{" "}
                 {task.exptime ? new Date(task.exptime).toLocaleString() : "N/A"}
@@ -180,29 +171,6 @@ function VolunteerDashboard() {
                   <strong>Delivered At:</strong>{" "}
                   {new Date(task.deliveredAt).toLocaleString()}
                 </p>
-              )}
-
-              {/* Actions */}
-              {activeTab === "assigned" && task.status !== "Delivered" && (
-                <div className="actions">
-                  <button
-                    className="delivered"
-                    onClick={() => markAsDelivered(task._id)}
-                  >
-                    Mark as Delivered
-                  </button>
-                </div>
-              )}
-
-              {activeTab === "available" && (
-                <div className="actions">
-                  <button
-                    className="transit"
-                    onClick={() => pickTask(task._id)}
-                  >
-                    Pick Task
-                  </button>
-                </div>
               )}
             </div>
           ))}

@@ -18,7 +18,7 @@ const Home = () => {
 
   // 🔹 Dynamic Content (with optional images/icons)
   const aboutContent = [
-    "FoodSavior is more than just a food donation platform – it’s a movement. Every year, millions of tons of food are wasted, while countless families go to bed hungry. Our mission is to close this gap by creating a digital bridge between those who have surplus food and those who desperately need it.",
+    "CloudCrumbs is more than just a food donation platform – it’s a movement. Every year, millions of tons of food are wasted, while countless families go to bed hungry. Our mission is to close this gap by creating a digital bridge between those who have surplus food and those who desperately need it.",
     "We connect restaurants, NGOs, volunteers, and individuals on one platform to ensure that every extra meal finds a home. With real-time tracking, verified NGOs, and dedicated volunteers, we guarantee transparency, hygiene, and impact — making sure every donation truly brings a smile."
   ];
 
@@ -283,7 +283,7 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="footer" style={{ textAlign: "center", padding: "1rem", backgroundColor: "#222", color: "#fff" }}>
-        <p>© 2025 FoodSavior – All Rights Reserved</p>
+        <p>© 2025 CloudCrumbs – All Rights Reserved</p>
       </footer>
     </>
   );

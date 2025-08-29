@@ -18,7 +18,7 @@ const Donation = () => {
       key: process.env.REACT_APP_RAZORPAY_KEY_ID || "rzp_test_R9Fl4RhWIxLeKL",
       amount: order.amount,
       currency: order.currency,
-      name: "FoodSavior NGO",
+      name: "CloudCrumbs NGO",
       description: "Support Our NGO",
       order_id: order.id,
       handler: function (response) {

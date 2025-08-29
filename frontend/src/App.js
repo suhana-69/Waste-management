@@ -5,7 +5,6 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import Chatbot from "./components/Chatbot";
 import Donation from "./components/Donation";
-import FeedbackPage from "./components/FeedbackPage";
 // Pages
 import Home from "./components/Home";
 import Login from "./components/Login";
@@ -29,7 +28,6 @@ function App() {
           <Route path="/signup" component={Signup} />
           <Route path="/welcome" component={Welcome} />
           <Route path="/donate" component={Donation} />
-           <Route path="/feedback" element={FeedbackPage} />
           {/* Dashboards */}
           <Route path="/donor-dashboard" component={DonorDashboard} />
           <Route path="/ngo-dashboard" component={NgoDashboard} />

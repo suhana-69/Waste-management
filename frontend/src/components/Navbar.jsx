@@ -10,7 +10,7 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <div className="logo">FoodSavior</div>
+      <div className="logo">CloudCrumbs</div>
 
       <ul className="nav-links">
         <li><a href="/">Home</a></li>
@@ -18,8 +18,6 @@ function Navbar() {
         <li><a href="/#how">How It Works</a></li>
         <li><a href="/#impact">Impact</a></li>
         <li><a href="/#contact">Contact</a></li>
-        <li><a href="/feedback">Feedback</a></li>
-
       </ul>
 
       <div className="nav-buttons">
